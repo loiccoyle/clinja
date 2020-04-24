@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "clinja"
+version = "0.1.0"
+description = "a smart cli jinja runner"
+authors = ["Loic Coyle <loic.coyle@hotmail.fr>"]
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python",
+]
+repository = "https://github.com/loiccoyle/clinja"
+readme = "README.md"
+keywords = []
+
+[tool.poetry.dependencies]
+python = "^3.6"
+myopy = "^1.0"
+click = "^7.1.1"
+jinja2 = "^2.11.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.4.1"
+pytest-cov = "^2.8.1"
+
+[tool.poetry.scripts]
+clinja = 'clinja.cli:main'
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
