@@ -80,7 +80,6 @@ def run(ctx, template, destination, prompt='always'):
                 force = click.confirm(msg)
             else:
                 force = False
-
             ctx.obj['store'].add(var, value, force=store)
 
     destination.write(clinja_template.render(config_vars))
@@ -130,8 +129,7 @@ def add(ctx, variable_name: str, value: str, force: bool=False):
         err_exit(f"\"{variable_name}\" already in store, use -f to overwrite.")
 
 
-@cli.command(name='config', help=(f'Run clinja config file: {CONF_FILE}'
-                                  " and print the variable names and values."))
+@cli.command(name='config', help=f'Run clinja config file: {CONF_FILE}')
 @click.argument('template', default='-', type=click.File('r'))
 @click.argument('destination', default='-', type=click.File('w'))
 @click.pass_context

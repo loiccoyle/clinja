@@ -176,7 +176,7 @@ class ClinjaStore:
         Parameters:
         -----------
         variable_name:
-            Varaible to remove from the store.
+            Variable to remove from the store.
         """
         del self.stored[variable_name]
         self._write()

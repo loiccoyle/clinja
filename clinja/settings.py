@@ -12,15 +12,13 @@ STORE_FILE = CONF_DIR / 'store.json'
 
 CONF_FILE_INIT = """\
 # This is the config file for clinja.
-# These variables are provided at run time:
-# TEMPLATE (Path): Path to the template, can be None.
-# DESTINATION (Path): Path to the destination, can be None.
-# RUN_CWD (Path): Directory were the clinja command was run.
-# VARS (dict): a dictionary of variable names and values, to populate the
-#   templates with.
+# The following variables are provided at run time:
 #
-# NOTE: By default this python code will be executed in the template's folder,
-but local imports still work.
+# TEMPLATE (Path): Path to the template, is None when using stdin.
+# DESTINATION (Path): Path to the destination, is None when using stdout.
+# RUN_CWD (Path): Directory were the clinja command was run.
+# VARS (dict): Dictionary of variable names and values, to populate the
+#   templates with.
 """
 
 STORE_FILE_INIT = """\
