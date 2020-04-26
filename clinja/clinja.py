@@ -125,7 +125,7 @@ class ClinjaStore:
     @property
     def stored(self) -> dict:
         """
-        dict: Stored variable name and values.
+        dict: Stored variable names and values.
         """
         if self._stored is None:
             with open(self.store, 'r') as fp:
@@ -139,7 +139,7 @@ class ClinjaStore:
             json.dump(self.stored, fp, indent=4, sort_keys=True)
 
     def list(self):
-        """Print the stored variable name and values.
+        """Print the stored variable names and values.
         """
         for k, v in self.stored.items():
             click.echo(f'{click.style(k, bold=True)}: {v}')
