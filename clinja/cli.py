@@ -130,13 +130,18 @@ def add(ctx, variable_name: str, value: str, force: bool=False):
         err_exit(f"\"{variable_name}\" already in store, use -f to overwrite.")
 
 
-@cli.command(name='config', help=f'Run clinja config file: {CONF_FILE}')
+@cli.command(name='config', help=(f'Run clinja config file: {CONF_FILE}'
+                                  " and print the variable names and values."))
 @click.argument('template', default='-', type=click.File('r'))
 @click.argument('destination', default='-', type=click.File('w'))
 @click.pass_context
 def config(ctx, template, destination):
-    click.echo(ctx.obj['config'].run(ctx.obj['store'].stored,
-                                     template,
-                                     destination))
+    stored_vars = ctx.obj['store'].stored
+    config_vars = ctx.obj['config'].run(stored_vars,
+                                        template,
+                                        destination)
+    updated_vars = dict_key_diff(stored_vars, config_vars)
+    for k in sorted(updated_vars):
+        click.echo(f"{click.style(k, bold=True)}: {config_vars[k]}")
 
 
