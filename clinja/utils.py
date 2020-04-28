@@ -2,6 +2,7 @@ import sys
 import click
 from typing import Any
 from typing import Callable
+from ast import literal_eval
 from functools import partial
 from functools import update_wrapper
 from contextlib import contextmanager
@@ -47,30 +48,6 @@ def prompt(value: Any, prompt_on: str, prompt_text: str, type: Callable) -> Any:
         return type(value)
 
 
-def dict_key_diff(ori: dict, new: dict) -> set:
-    """Performs the diff of 2 dictionaries.
-
-    Parameters:
-    -----------
-    ori:
-        Original dictionary.
-    new:
-        `ori` but with changed and or added key/values.
-
-    Returns:
-    --------
-    set:
-        Set of the added and or changed keys.
-    """
-    new_keys = set(new.keys())
-    ori_keys = set(ori.keys())
-    out = new_keys - ori_keys
-    for key in ori_keys - out:
-        if ori[key] != new[key]:
-            out.append(key)
-    return out
-
-
 def err_exit(msg: str, exit_code: int=1):
     """Echos a msg then exits.
 
@@ -85,3 +62,10 @@ def err_exit(msg: str, exit_code: int=1):
                click.style(msg, fg='red'), err=True)
     if exit_code != 0:
         sys.exit(exit_code)
+
+
+def literal_eval_or_string(value):
+    try:
+        return literal_eval(value)
+    except (ValueError, SyntaxError):
+        return value

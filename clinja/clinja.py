@@ -8,7 +8,7 @@ from jinja2 import Template
 from jinja2 import Environment
 from jinja2.meta import find_undeclared_variables
 
-from .settings import CONF_FILE, STORE_FILE
+from .settings import DYNAMIC_FILE, STATIC_FILE
 
 
 class ClinjaTemplate(Template):
@@ -44,16 +44,16 @@ class ClinjaTemplate(Template):
         return find_undeclared_variables(ast)
 
 
-class ClinjaConfig:
-    def __init__(self, config: Path=CONF_FILE):
-        """This class handles the clinja config.py file.
+class ClinjaDynamic:
+    def __init__(self, dynamic_file: Path=DYNAMIC_FILE):
+        """This class handles clinja's dynamic.py file.
 
         Parameters:
         -----------
-        config
-            Path to the configuration file.
+        dynamic_file
+            Path to the dynamic file.
         """
-        self.config = config
+        self.dynamic_file = dynamic_file
 
     @staticmethod
     def _get_stringio_path(stringio: StringIO) -> Path:
@@ -75,16 +75,16 @@ class ClinjaConfig:
             return Path(stringio.name).absolute()
 
     def run(self,
-            stored: dict={},
+            static: dict={},
             template: StringIO=None,
             destination: StringIO=None):
-        """Runs the python config file and returns the variable name and value
+        """Runs the python dynamic.py file and returns the variable name and value
         dictionary.
 
         Parameters:
         -----------
-        stored:
-            The variable names and values from storage.
+        static:
+            The variable names and values from static storage.
         template:
             The template file.
         destination:
@@ -93,33 +93,34 @@ class ClinjaConfig:
         Returns:
         --------
         dict:
-            The variable name and values after running the config file.
+            The variable name and values after running the file.
         """
-        config_vars = stored.copy()
-        conf = PyFile(self.config)
+        dynamic_vars = {}
+        conf = PyFile(self.dynamic_file)
         conf.provide('TEMPLATE', self._get_stringio_path(template))
         conf.provide('DESTINATION', self._get_stringio_path(destination))
         conf.provide('RUN_CWD', Path.cwd())
-        conf.provide('VARS', config_vars)
+        conf.provide('STATIC_VARS', static.copy())
+        conf.provide('DYNAMIC_VARS', dynamic_vars)
         conf_module = conf.run()
-        return config_vars
+        return dynamic_vars
 
 
-class ClinjaStore:
-    def __init__(self, store: Path=STORE_FILE):
-        """Handles clinja's variable name/value storage.
+class ClinjaStatic:
+    def __init__(self, static_file: Path=STATIC_FILE):
+        """Handles clinja's static variable names and values.
 
         Parameters:
         -----------
-        store:
-            Path the store json file.
+        static_file:
+            Path the static json file.
 
         Attributes:
         -----------
-        store:
-            Path the store json file.
+        static_file:
+            Path the static json file.
         """
-        self.store = store
+        self.static_file = static_file
         self._stored = None
 
     @property
@@ -128,14 +129,14 @@ class ClinjaStore:
         dict: Stored variable names and values.
         """
         if self._stored is None:
-            with open(self.store, 'r') as fp:
+            with open(self.static_file, 'r') as fp:
                 self._stored = json.load(fp)
         return self._stored
 
     def _write(self):
         """Write `self.stored` to file.
         """
-        with open(self.store, 'w') as fp:
+        with open(self.static_file, 'w') as fp:
             json.dump(self.stored, fp, indent=4, sort_keys=True)
 
     def list(self):
@@ -148,7 +149,7 @@ class ClinjaStore:
             variable_name: str,
             value: Any,
             force: bool=False):
-        """Add a variable name and value to the store file.
+        """Add a variable name and value to static storage.
 
         Parameters:
         -----------
@@ -165,13 +166,14 @@ class ClinjaStore:
         ValueError
             if `force` is False and `variable_name` already exists.
         """
-        if not force and variable_name in self.stored.keys():
+        if (not force and variable_name in self.stored.keys() and
+            self.stored[variable_name] != value):
             raise ValueError(f"\"{variable_name}\" already in store.")
         self.stored[variable_name] = value
         self._write()
 
     def remove(self, variable_name: str):
-        """Remove a variable from the store.
+        """Remove a variable from the static storage.
 
         Parameters:
         -----------

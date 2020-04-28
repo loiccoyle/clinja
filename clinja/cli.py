@@ -1,18 +1,18 @@
+import sys
 import click
-from ast import literal_eval
 
-from .clinja import ClinjaConfig
-from .clinja import ClinjaStore
+from .clinja import ClinjaDynamic
+from .clinja import ClinjaStatic
 from .clinja import ClinjaTemplate
 from .utils import partial_wrap
 from .utils import prompt
-from .utils import dict_key_diff
 from .utils import err_exit
+from .utils import literal_eval_or_string
 from .settings import CONF_DIR
-from .settings import CONF_FILE
-from .settings import STORE_FILE
-from .settings import CONF_FILE_INIT
-from .settings import STORE_FILE_INIT
+from .settings import DYNAMIC_FILE
+from .settings import STATIC_FILE
+from .settings import DYNAMIC_FILE_INIT
+from .settings import STATIC_FILE_INIT
 
 
 @click.group()  # (invoke_without_command=True)
@@ -24,17 +24,17 @@ def cli(ctx):
 
     if not CONF_DIR.is_dir():
         CONF_DIR.mkdir(parents=True)
-    if not CONF_FILE.is_file():
-        with open(CONF_FILE, 'w') as fp:
-            fp.write(CONF_FILE_INIT)
-    if not STORE_FILE.is_file():
-        with open(STORE_FILE, 'w') as fp:
-            fp.write(STORE_FILE_INIT)
+    if not DYNAMIC_FILE.is_file():
+        with open(DYNAMIC_FILE, 'w') as fp:
+            fp.write(DYNAMIC_FILE_INIT)
+    if not STATIC_FILE.is_file():
+        with open(STATIC_FILE, 'w') as fp:
+            fp.write(STATIC_FILE_INIT)
 
-    store = ClinjaStore(store=STORE_FILE)
-    config = ClinjaConfig(config=CONF_FILE)
-    ctx.obj['store'] = store
-    ctx.obj['config'] = config
+    static = ClinjaStatic(static_file=STATIC_FILE)
+    dynamic = ClinjaDynamic(dynamic_file=DYNAMIC_FILE)
+    ctx.obj['static'] = static
+    ctx.obj['dynamic'] = dynamic
 
 
 @cli.command(name='run', help='Run jinja2 on a template.')
@@ -44,103 +44,108 @@ def cli(ctx):
               type=click.Choice(['always', 'missing', 'never']),
               default='always',
               help='When to prompt for variable values.')
+@click.option('-d', '--dry-run', 'dry_run', is_flag=True, default=False,
+              help='Dry run, won\'t write any files or change static values.')
 @click.pass_context
-def run(ctx, template, destination, prompt='always'):
+def run(ctx, template, destination, prompt='always', dry_run=False):
     clinja_template = ClinjaTemplate(template)
-    stored_vars = ctx.obj['store'].stored
-    config_vars = ctx.obj['config'].run(stored=stored_vars,
-                                        template=template,
-                                        destination=destination)
-    updated_vars = dict_key_diff(stored_vars, config_vars)
-    template_vars = clinja_template.get_vars()
-    missing_vars = template_vars - set(config_vars.keys())
+    static = ctx.obj['static']
+    static_vars = static.stored
+    dynamic_vars = ctx.obj['dynamic'].run(static=static_vars,
+                                          template=template,
+                                          destination=destination)
+    all_vars = {**static_vars, **dynamic_vars}
 
     if prompt == 'always':
-        prompt_vars = template_vars
-    elif prompt == 'missing':
-        prompt_vars = missing_vars
-    elif prompt == 'never':
-        if len(missing_vars) > 0:
-           err_exit(f"Missing {', '.join(map(repr, missing_vars))}.")
-        prompt_vars = {}
+        prompt_vars = clinja_template.get_vars()
+    elif prompt == 'missing' or prompt == 'never':
+        prompt_vars = clinja_template.get_vars() - set(dynamic_vars.keys() +
+                                                       static_vars.keys())
+        if prompt == 'never' and len(prompt_vars) > 0:
+           err_exit(f"Missing {', '.join(map(repr, prompt_vars))}.")
 
     for var in sorted(prompt_vars):
-        default = config_vars.get(var, None)
-        value = literal_eval(click.prompt(click.style(f"{var}", bold=True),
-                                   default=default,
-                                   type=click.STRING,
-                                   show_default=True))
-        config_vars[var] = value
-        if var != default and var not in updated_vars:
-            if var in stored_vars:
-                msg = ''.join(["Do you want to overwrite ",
-                               click.style(stored_vars[var], bold=True),
-                               " with ",
-                               click.style(value, bold=True),
-                               "?"])
-                force = click.confirm(msg)
-            else:
-                force = False
-            ctx.obj['store'].add(var, value, force=store)
+        default = all_vars.get(var, None)
+        value = click.prompt(click.style(f"{var}", bold=True),
+                             default=default,
+                             # type=click.STRING,
+                             show_default=True)
+        all_vars[var] = literal_eval_or_string(value)
+        if not dry_run and var not in dynamic_vars.keys():
+            add.callback(var, [value], force=False)
 
-    destination.write(clinja_template.render(config_vars))
+    if not dry_run or destination.name == '<stdout>':
+        destination.write(clinja_template.render(all_vars))
 
 
-@cli.command(name='list', help='List stored variable name/values.')
+@cli.command(name='list', help='List stored static variable names/values.')
 @click.pass_context
 def list(ctx):
-    ctx.obj['store'].list()
+    ctx.obj['static'].list()
 
 
-@cli.command(name='remove', help='Remove a stored variable name/value.')
+@cli.command(name='remove', help='Remove stored static variable name(s)/value(s).')
 @click.argument('variable_name', nargs=-1, type=click.STRING)
 @click.pass_context
 def remove(ctx, variable_name):
+    err = False
     for v_name in variable_name:
         try:
-            ctx.obj['store'].remove((v_name))
+            ctx.obj['static'].remove((v_name))
         except KeyError as e:
-            click.secho(f'Variable name {e} is not in storage.',
-                    err=True,
-                    bold=True,
-                    fg='red')
+            err = True
+            err_exit(f'Variable name {e} is not in storage.', exit_code=0)
+    if exit:
+        sys.exit(1)
 
 
-@cli.command(name='add', help='Add a variable name/value to storage.')
+@cli.command(name='add', help='Add a variable name/value to static storage.')
 @click.argument('variable_name',
         default="",
         type=partial_wrap(prompt,
                           prompt_on='',
-                          prompt_text='variable_name',
+                          prompt_text='variable name',
                           type=click.STRING))
-@click.argument('value',
-        default="",
-        type=partial_wrap(prompt,
-                          prompt_on='',
-                          prompt_text='value',
-                          type=click.STRING))
-@click.option('-f', '--force', 'force', is_flag=True)
+@click.argument('value', nargs=-1, type=click.STRING)
+@click.option('-f', '--force', 'force', is_flag=True, default=False)
 @click.pass_context
 def add(ctx, variable_name: str, value: str, force: bool=False):
     """Add a variable_name/value pair to the storage.
     """
+    if value == ():
+        value = click.prompt(click.style("value", bold=True),
+                             type=click.STRING)
+    else:
+        value = ' '.join(value)
+    value = literal_eval_or_string(value)
+    variable_name = variable_name.strip()
+
+    static = ctx.obj['static']
     try:
-        ctx.obj['store'].add(variable_name, value, force=force)
+        static.add(variable_name,
+                   literal_eval_or_string(value),
+                   force=force)
     except ValueError:
-        err_exit(f"\"{variable_name}\" already in store, use -f to overwrite.")
+        msg = ''.join(["Do you want to overwrite ",
+                       click.style(str(static.stored[variable_name]), bold=True),
+                       " with ",
+                       click.style(str(value), bold=True),
+                       "?"])
+        if click.confirm(msg):
+            static.add(variable_name,
+                       literal_eval_or_string(value),
+                       force=True)
 
 
-@cli.command(name='config', help=f'Run clinja config file: {CONF_FILE}')
+@cli.command(name='test', help=f'Test run your dynamic file: {DYNAMIC_FILE}')
 @click.argument('template', default='-', type=click.File('r'))
 @click.argument('destination', default='-', type=click.File('w'))
 @click.pass_context
-def config(ctx, template, destination):
-    stored_vars = ctx.obj['store'].stored
-    config_vars = ctx.obj['config'].run(stored_vars,
-                                        template,
-                                        destination)
-    updated_vars = dict_key_diff(stored_vars, config_vars)
-    for k in sorted(updated_vars):
-        click.echo(f"{click.style(k, bold=True)}: {config_vars[k]}")
+def test(ctx, template, destination):
+    dynamic_vars = ctx.obj['dynamic'].run(static=ctx.obj['static'].stored,
+                                          template=template,
+                                          destination=destination)
+    for k in sorted(dynamic_vars.keys()):
+        click.echo(f"{click.style(k, bold=True)}: {dynamic_vars[k]}")
 
 
