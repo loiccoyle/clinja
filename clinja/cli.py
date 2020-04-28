@@ -149,5 +149,3 @@ def test(ctx, template, destination):
                                           destination=destination)
     for k in sorted(dynamic_vars.keys()):
         click.echo(f"{click.style(k, bold=True)}: {dynamic_vars[k]}")
-
-

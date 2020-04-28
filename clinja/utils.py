@@ -5,7 +5,7 @@ from typing import Callable
 from ast import literal_eval
 from functools import partial
 from functools import update_wrapper
-from contextlib import contextmanager
+
 
 def partial_wrap(func: Callable, *args, **kwargs) -> Callable:
     """partial and update_wrapper.
