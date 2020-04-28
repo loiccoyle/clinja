@@ -1,4 +1,5 @@
 import click
+from ast import literal_eval
 
 from .clinja import ClinjaConfig
 from .clinja import ClinjaStore
@@ -65,10 +66,10 @@ def run(ctx, template, destination, prompt='always'):
 
     for var in sorted(prompt_vars):
         default = config_vars.get(var, None)
-        value = click.prompt(click.style(f"{var}", bold=True),
-                             default=default,
-                             type=click.STRING,
-                             show_default=True)
+        value = literal_eval(click.prompt(click.style(f"{var}", bold=True),
+                                   default=default,
+                                   type=click.STRING,
+                                   show_default=True))
         config_vars[var] = value
         if var != default and var not in updated_vars:
             if var in stored_vars:
@@ -105,7 +106,7 @@ def remove(ctx, variable_name):
                     fg='red')
 
 
-@cli.command(name='add', help='Add a variable name/value.')
+@cli.command(name='add', help='Add a variable name/value to storage.')
 @click.argument('variable_name',
         default="",
         type=partial_wrap(prompt,
