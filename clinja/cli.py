@@ -13,6 +13,7 @@ from .settings import DYNAMIC_FILE
 from .settings import STATIC_FILE
 from .settings import DYNAMIC_FILE_INIT
 from .settings import STATIC_FILE_INIT
+from .completions import variable_names
 
 
 @click.group()  # (invoke_without_command=True)
@@ -87,7 +88,8 @@ def list(ctx):
 
 
 @cli.command(name='remove', help='Remove stored static variable(s).')
-@click.argument('variable_name', nargs=-1, type=click.STRING)
+@click.argument('variable_name', autocompletion=variable_names, nargs=-1,
+                type=click.STRING)
 @click.pass_context
 def remove(ctx, variable_name):
     err = False
