@@ -62,6 +62,7 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
         prompt_vars = clinja_template.get_vars() - set(dynamic_vars.keys() +
                                                        static_vars.keys())
         if prompt == 'never' and len(prompt_vars) > 0:
+            # only continue if there are no missing vars
            err_exit(f"Missing {', '.join(map(repr, prompt_vars))}.")
 
     for var in sorted(prompt_vars):
@@ -72,19 +73,20 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
                              show_default=True)
         all_vars[var] = literal_eval_or_string(value)
         if not dry_run and var not in dynamic_vars.keys():
+            # call the add method without cli
             add.callback(var, [value], force=False)
 
     if not dry_run or destination.name == '<stdout>':
         destination.write(clinja_template.render(all_vars))
 
 
-@cli.command(name='list', help='List stored static variable names/values.')
+@cli.command(name='list', help='List stored static variable(s).')
 @click.pass_context
 def list(ctx):
     ctx.obj['static'].list()
 
 
-@cli.command(name='remove', help='Remove stored static variable name(s)/value(s).')
+@cli.command(name='remove', help='Remove stored static variable(s).')
 @click.argument('variable_name', nargs=-1, type=click.STRING)
 @click.pass_context
 def remove(ctx, variable_name):
@@ -99,7 +101,7 @@ def remove(ctx, variable_name):
         sys.exit(1)
 
 
-@cli.command(name='add', help='Add a variable name/value to static storage.')
+@cli.command(name='add', help='Add a variable to static storage.')
 @click.argument('variable_name',
         default="",
         type=partial_wrap(prompt,
