@@ -80,7 +80,7 @@ def literal_eval_or_string(value: str) -> Any:
     """
     try:
         return literal_eval(value)
-    except (ValueError, SyntaxError):
+    except ValueError:
         return value
 
 
