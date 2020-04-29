@@ -77,10 +77,13 @@ def cli(ctx):
 def run(ctx, template, destination, prompt='always', dry_run=False):
     """Run jinja on a template.
 
-    TEMPLATE (optional, default: stdin): template file on which to run jinja.
+    TEMPLATE (optional, default: stdin): template file on which to run jinja,
+    if using stdin, --prompt is set to "never".
 
     DESTINATION (optional, default: stdout): output destination.
     """
+    if template.name == '<stdin>':
+        prompt = 'never'
     clinja_template = ClinjaTemplate(template)
     static = ctx.obj['static']
     static_vars = static.stored
@@ -92,8 +95,8 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
     if prompt == 'always':
         prompt_vars = clinja_template.get_vars()
     elif prompt == 'missing' or prompt == 'never':
-        prompt_vars = clinja_template.get_vars() - set(dynamic_vars.keys() +
-                                                       static_vars.keys())
+        prompt_vars = clinja_template.get_vars() - (set(dynamic_vars.keys()) |
+                                                    set(static_vars.keys()))
         if prompt == 'never' and len(prompt_vars) > 0:
             # only continue if there are no missing vars
            err_exit(f"Missing {', '.join(map(repr, prompt_vars))}.")
