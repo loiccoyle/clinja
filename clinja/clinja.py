@@ -1,8 +1,11 @@
+import re
 import json
 import click
+
 from io import StringIO
 from myopy import PyFile
 from typing import Any
+from typing import Union
 from pathlib import Path
 from jinja2 import Template
 from jinja2 import Environment
@@ -50,7 +53,7 @@ class ClinjaDynamic:
 
         Parameters:
         -----------
-        dynamic_file
+        dynamic_file: optional
             Path to the dynamic file.
         """
         self.dynamic_file = dynamic_file
@@ -75,32 +78,40 @@ class ClinjaDynamic:
             return Path(stringio.name).absolute()
 
     def run(self,
-            static: dict={},
-            template: StringIO=None,
-            destination: StringIO=None):
+            static_vars: dict={},
+            template: Union[StringIO, Path]=None,
+            destination: Union[StringIO, Path]=None,
+            run_cwd: Path=Path.cwd().absolute()):
         """Runs the python dynamic.py file and returns the variable name and value
         dictionary.
 
         Parameters:
         -----------
-        static:
+        static_vars: optional
             The variable names and values from static storage.
-        template:
+        template: optional
             The template file.
-        destination:
+        destination: optional
             The destination file.
+        run_cwd: optional
+            The directory in which the clinja command is run.
 
         Returns:
         --------
         dict:
             The variable name and values after running the file.
         """
+        if isinstance(template, StringIO):
+            template = self._get_stringio_path(template)
+        if isinstance(destination, StringIO):
+            destination = self._get_stringio_path(destination)
+
         dynamic_vars = {}
         conf = PyFile(self.dynamic_file)
-        conf.provide('TEMPLATE', self._get_stringio_path(template))
-        conf.provide('DESTINATION', self._get_stringio_path(destination))
-        conf.provide('RUN_CWD', Path.cwd())
-        conf.provide('STATIC_VARS', static.copy())
+        conf.provide('TEMPLATE', template)
+        conf.provide('DESTINATION', destination)
+        conf.provide('RUN_CWD', run_cwd)
+        conf.provide('STATIC_VARS', static_vars.copy())
         conf.provide('DYNAMIC_VARS', dynamic_vars)
         conf_module = conf.run()
         return dynamic_vars
@@ -112,7 +123,7 @@ class ClinjaStatic:
 
         Parameters:
         -----------
-        static_file:
+        static_file: optional
             Path the static json file.
 
         Attributes:
@@ -133,17 +144,38 @@ class ClinjaStatic:
                 self._stored = json.load(fp)
         return self._stored
 
+    @staticmethod
+    def sanitize_variable_name(variable_name:str) -> str:
+        variable_name = variable_name.strip()
+        if variable_name.isidentifier():
+            return variable_name
+        else:
+            raise ValueError(f'"{variable_name}" is not a valid variable name.')
+
     def _write(self):
         """Write `self.stored` to file.
         """
         with open(self.static_file, 'w') as fp:
             json.dump(self.stored, fp, indent=4, sort_keys=True)
 
-    def list(self):
+    def list(self, pattern=None):
         """Print the stored variable names and values.
+
+        Parameters:
+        -----------
+        pattern: optional
+            Regex pattern for variable name filtering.
+
+        Returns:
+        --------
+            Iterable
+                Iterable on key value pairs of stored variables.
         """
-        for k, v in self.stored.items():
-            click.echo(f'{click.style(k, bold=True)}: {v}')
+        if pattern is not None:
+            pattern = re.compile(pattern)
+            return ((k, v) for k, v in self.stored.items() if re.search(pattern, k))
+        else:
+            return self.stored.items()
 
     def add(self,
             variable_name: str,
@@ -157,7 +189,7 @@ class ClinjaStatic:
             jinja variable name.
         value:
             Assigned value.
-        force:
+        force: optional
             if True will overwrite any existing value.
             if False will raise ValueError is `variable_name` is already used.
 
@@ -166,6 +198,7 @@ class ClinjaStatic:
         ValueError
             if `force` is False and `variable_name` already exists.
         """
+        variable_name = self.sanitize_variable_name(variable_name)
         if (not force and variable_name in self.stored.keys() and
             self.stored[variable_name] != value):
             raise ValueError(f"\"{variable_name}\" already in store.")

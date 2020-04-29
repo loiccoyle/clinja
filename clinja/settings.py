@@ -13,17 +13,18 @@ STATIC_FILE = CONF_DIR / 'static.json'
 
 
 DYNAMIC_FILE_INIT = """\
-# This is the config file for clinja.
+# This is the dynamic file for clinja.
+# Use this file to dynamically determine jinja variables form the provided
+# variables.
 # The following variables are provided at run time:
 
 # TEMPLATE (Path): Path to the template, is None when using stdin.
 # DESTINATION (Path): Path to the destination, is None when using stdout.
 # RUN_CWD (Path): Directory were the clinja command was run.
-# STATIC_VARS (dict): Dictionary of static variable names and values.
-# DYNAMIC_VARS (dict): Dictionary of dynamic variable names and values.
+# STATIC_VARS (dict): Dictionary of static variables.
+# DYNAMIC_VARS (dict): Dictionary of dynamic variables.
 
-# This file should populate the DYNAMIC_VARS dictionary with any variable
-# names and values it can determine from the provided variables.
+# This file should populate the DYNAMIC_VARS dictionary.
 """
 
 STATIC_FILE_INIT = """\
