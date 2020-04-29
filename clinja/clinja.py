@@ -103,7 +103,7 @@ class ClinjaDynamic:
         """
         if isinstance(template, TextIOWrapper):
             template = self._get_io_path(template)
-        if isinstance(destination, click.utils.LazyFile):
+        if isinstance(destination, (click.utils.LazyFile, TextIOWrapper)):
             destination = self._get_io_path(destination)
 
         dynamic_vars = {}

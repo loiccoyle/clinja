@@ -109,8 +109,12 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
         except ValueError as e:
             err_exit(str(e))
         if not dry_run and var not in dynamic_vars.keys():
-            # call the add method without cli
-            add.callback(var, value, force=False)
+            if (var not in static_vars.keys() and
+                click.confirm(f'Do you want to store {bold(var)}?')):
+                add.callback(var, value, force=False)
+            elif var in static_vars.keys():
+                # call the add method without cli
+                add.callback(var, value, force=False)
 
     if not dry_run or destination.name == '<stdout>':
         destination.write(clinja_template.render(all_vars))
