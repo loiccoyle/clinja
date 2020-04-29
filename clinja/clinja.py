@@ -73,7 +73,7 @@ class ClinjaDynamic:
         Path
             path to textio's file.
         """
-        if textio is None or textio.name in ['<stdin>', '<stdout>']:
+        if textio.name in ['<stdin>', '<stdout>']:
             return None
         else:
             return Path(textio.name).absolute()
