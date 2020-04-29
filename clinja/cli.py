@@ -112,10 +112,11 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
         except ValueError as e:
             err_exit(str(e))
         if not dry_run and var not in dynamic_vars.keys():
-            if (var not in static_vars.keys() and
+            in_static = var in static_vars.keys()
+            if (not in_static and
                 click.confirm(f'Do you want to store {bold(var)}?')):
                 add.callback(var, value, force=False)
-            elif var in static_vars.keys():
+            elif in_static:
                 # call the add method without cli
                 add.callback(var, value, force=False)
 
@@ -193,7 +194,7 @@ def add(ctx, variable_name: str, value: str, force: bool=False):
                    force=force)
     except ValueError:
         msg = ''.join(["Do you want to overwrite ",
-                       bold(static.stored[variable_name]),
+                       bold(str(static.stored[variable_name])),
                        " with ",
                        bold(str(value)),
                        "?"])
