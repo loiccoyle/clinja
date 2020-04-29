@@ -29,12 +29,13 @@ from .completions import file_names
 @click.group(cls=AliasedGroup)  # (invoke_without_command=True)
 @click.pass_context
 @f_docstring(f'''
-A smart and hackable jinja command line interface.
+A smart and versatile jinja command line interface.
 
-Clinja has two sources for jinja variables, a {bold('static')} source, a json
-file, and a {bold('dynamic')} source, a python source file. Clinja populates
-the {bold('static')} source with user entered values.
-Whereas the {bold('dynamic')} variables are computed at run time by the python file.
+Clinja uses two sources to find values for jinja variables. A {bold('static')}
+source, which is just a json file, and a {bold('dynamic')} source, which is a
+python source file. Clinja populates the {bold('static')} source with user
+entered values. Whereas the {bold('dynamic')} variables are computed at run time
+by the python file.
 
 In short:
 
