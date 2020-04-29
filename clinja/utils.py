@@ -25,31 +25,6 @@ def partial_wrap(func: Callable, *args, **kwargs) -> Callable:
     return update_wrapper(partial(func, *args, **kwargs), func)
 
 
-def prompt(value: Any, prompt_on: str, prompt_text: str, type: Callable) -> Any:
-    """Prompt when value equals `prompt_on`.
-
-    Parameters:
-    -----------
-    value:
-        Provided value.
-    prompt_on:
-        Prompts when equal to `value`.
-    prompt_text:
-        Prompt text.
-    type:
-        Expected type.
-
-    Returns:
-    --------
-    `type`:
-        Either `value` or the user's input cast as `type`.
-    """
-    if value is prompt_on:
-        return type(click.prompt(click.style(prompt_text, bold=True)))
-    else:
-        return type(value)
-
-
 def err_exit(msg: str, exit_code: int=1):
     """Echo a msg then exits.
 
@@ -80,8 +55,16 @@ def literal_eval_or_string(value: str) -> Any:
     """
     try:
         return literal_eval(value)
-    except ValueError:
+    except (ValueError, SyntaxError):
         return value
+
+
+def sanitize_variable_name(variable_name:str) -> str:
+    variable_name = variable_name.strip()
+    if variable_name.isidentifier():
+        return variable_name
+    else:
+        raise ValueError(f'"{variable_name}" is not a valid variable name.')
 
 
 def f_docstring(docstring: str) -> Callable:

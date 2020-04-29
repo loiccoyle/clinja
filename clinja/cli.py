@@ -1,6 +1,7 @@
 import sys
 import click
 
+from typing import Any
 from pathlib import Path
 from json import loads
 from json import JSONDecodeError
@@ -9,9 +10,9 @@ from .clinja import ClinjaDynamic
 from .clinja import ClinjaStatic
 from .clinja import ClinjaTemplate
 from .utils import partial_wrap
-from .utils import prompt
 from .utils import err_exit
 from .utils import literal_eval_or_string
+from .utils import sanitize_variable_name
 from .utils import f_docstring
 from .utils import bold
 from .utils import AliasedGroup
@@ -24,6 +25,20 @@ from .completions import get_completions
 from .completions import variable_names
 from .completions import variable_value
 from .completions import file_names
+
+
+def prompt_value_check(value):
+    try:
+        return literal_eval_or_string(value)
+    except SyntaxError as e:
+        raise click.UsageError(e)
+
+
+def prompt_variable_name_check(value):
+    try:
+        return sanitize_variable_name(value)
+    except ValueError as e:
+        raise click.UsageError(e)
 
 
 @click.group(cls=AliasedGroup)  # (invoke_without_command=True)
@@ -103,15 +118,11 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
            err_exit(f"Missing {', '.join(map(repr, prompt_vars))}.")
 
     for var in sorted(prompt_vars):
-        default = all_vars.get(var, None)
         value = click.prompt(bold(var),
-                             default=default,
-                             # type=click.STRING,
+                             default=all_vars.get(var, None),
+                             value_proc=prompt_value_check,
                              show_default=True)
-        try:
-            all_vars[var] = value
-        except ValueError as e:
-            err_exit(str(e))
+        all_vars[var] = value
         if not dry_run and var not in dynamic_vars.keys():
             in_static = var in static_vars.keys()
             if (not in_static and
@@ -139,8 +150,10 @@ def list(ctx, pattern=None):
 
 
 @cli.command(name='remove')
-@click.argument('variable_name', autocompletion=variable_names, nargs=-1,
-                type=click.STRING)
+@click.argument('variable_name',
+                autocompletion=variable_names,
+                nargs=-1,
+                type=sanitize_variable_name)
 @click.pass_context
 def remove(ctx, variable_name):
     '''Remove stored static variable(s).
@@ -149,7 +162,7 @@ def remove(ctx, variable_name):
     err = False
     for v_name in variable_name:
         try:
-            static.remove(static.sanitize_variable_name(v_name))
+            static.remove(v_name)
         except KeyError as e:
             err = True
             err_exit(f'Variable name {e} is not in storage.', exit_code=0)
@@ -164,35 +177,31 @@ def remove(ctx, variable_name):
 @click.argument('variable_name',
                 default="",
                 autocompletion=variable_names,
-                type=partial_wrap(prompt,
-                                  prompt_on='',
-                                  prompt_text='variable name',
-                                  type=click.STRING))
-@click.argument('value', nargs=-1, type=click.STRING,
+                type=sanitize_variable_name)
+@click.argument('value',
+                nargs=-1,
+                type=click.STRING,
                 autocompletion=variable_value)
 @click.option('-f', '--force', 'force', is_flag=True, default=False)
 @click.pass_context
-def add(ctx, variable_name: str, value: str, force: bool=False):
+def add(ctx, variable_name: str, value: Any, force: bool=False):
     """Add a variable to static storage.
     """
     static = ctx.obj['static']
+    if variable_name == '':
+        variable_name = click.prompt(bold('variable name'),
+                                     value_proc=prompt_variable_name_check)
     if value == ():
         value = click.prompt(bold("value"),
-                             type=click.STRING)
+                             value_proc=prompt_value_check)
     elif isinstance(value, tuple):
-        # for when this method gets called in the run command
         value = ' '.join(value)
-    value = literal_eval_or_string(value)
+    if isinstance(value, str):
+        # check for when this is called outside of command line
+        value = literal_eval_or_string(value)
 
     try:
-        variable_name = static.sanitize_variable_name(variable_name)
-    except ValueError as e:
-        err_exit(str(e))
-
-    try:
-        static.add(variable_name,
-                   literal_eval_or_string(value),
-                   force=force)
+        static.add(variable_name, value, force=force)
     except ValueError:
         msg = ''.join(["Do you want to overwrite ",
                        bold(str(static.stored[variable_name])),
@@ -200,9 +209,7 @@ def add(ctx, variable_name: str, value: str, force: bool=False):
                        bold(str(value)),
                        "?"])
         if click.confirm(msg):
-            static.add(variable_name,
-                       literal_eval_or_string(value),
-                       force=True)
+            static.add(variable_name, value, force=True)
 
 
 @cli.command(name='test')
@@ -218,7 +225,7 @@ def add(ctx, variable_name: str, value: str, force: bool=False):
 def test(ctx, template, destination, run_cwd=Path.cwd(), static_vars=None):
     '''Test run your dynamic.py file.
 
-    Run your dynamic.py file using mock values for the provided variables.
+    Run your dynamic.py file using mock values.
 
     TEMPLATE, DESTINATION, RUN_CWD and STATIC_VARS are provided to the
     dynamic.py file in their respective variable names.

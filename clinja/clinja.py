@@ -12,6 +12,7 @@ from jinja2 import Environment
 from jinja2.meta import find_undeclared_variables
 
 from .settings import DYNAMIC_FILE, STATIC_FILE
+from .utils import sanitize_variable_name
 
 
 class ClinjaTemplate(Template):
@@ -144,14 +145,6 @@ class ClinjaStatic:
                 self._stored = json.load(fp)
         return self._stored
 
-    @staticmethod
-    def sanitize_variable_name(variable_name:str) -> str:
-        variable_name = variable_name.strip()
-        if variable_name.isidentifier():
-            return variable_name
-        else:
-            raise ValueError(f'"{variable_name}" is not a valid variable name.')
-
     def _write(self):
         """Write `self.stored` to file.
         """
@@ -198,7 +191,7 @@ class ClinjaStatic:
         ValueError
             if `force` is False and `variable_name` already exists.
         """
-        variable_name = self.sanitize_variable_name(variable_name)
+        variable_name = sanitize_variable_name(variable_name)
         if (not force and variable_name in self.stored.keys() and
             self.stored[variable_name] != value):
             raise ValueError(f"\"{variable_name}\" already in store.")
