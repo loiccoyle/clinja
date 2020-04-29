@@ -258,4 +258,4 @@ def test(ctx, template, destination, run_cwd=Path.cwd(), static_vars=None):
 def completion(shell):
     '''Generate autocompletion for your shell.
     '''
-    click.echo(get_completion(shell))
+    click.echo(get_completions(shell))
