@@ -1,4 +1,7 @@
 import json
+import click
+import sys
+from io import TextIOWrapper
 from clinja.clinja import ClinjaStatic
 from clinja.clinja import ClinjaDynamic
 from unittest import TestCase
@@ -46,6 +49,7 @@ class TestClinjaStatic(TestCase):
 class testClinjaDynamic(TestCase):
     def setUp(self):
         self.test_dir = Path('test_clinja')
+        self.test_template = self.test_dir / 'test_template'
         self.dynamic_file = self.test_dir / 'dynamic.py'
         self.dynamic_content ="""
 DYNAMIC_VARS['from_static'] = STATIC_VARS['name'] + ' Apple'
@@ -54,6 +58,7 @@ DYNAMIC_VARS['destination_path'] = DESTINATION
 DYNAMIC_VARS['run_cwd'] = RUN_CWD
 """
         self.test_dir.mkdir(exist_ok=True)
+        self.test_template.touch()
         with self.dynamic_file.open('w') as fp:
             fp.write(self.dynamic_content)
 
@@ -75,6 +80,15 @@ DYNAMIC_VARS['run_cwd'] = RUN_CWD
         self.assertEqual(out['from_static'], 'John Apple')
         self.assertEqual(out['template_path'], Path('test_template'))
         self.assertEqual(out['destination_path'], Path('test_destination'))
+        self.assertEqual(out['run_cwd'], Path('test_run_cwd'))
+
+        out = self.dynamic.run(template=TextIOWrapper(self.test_template.open('r')),
+                               destination=TextIOWrapper(self.test_template.open('r')),
+                               run_cwd=Path('test_run_cwd'),
+                               static_vars={'name': 'John'})
+        self.assertEqual(out['from_static'], 'John Apple')
+        self.assertEqual(out['template_path'], self.test_template.absolute())
+        self.assertEqual(out['destination_path'], self.test_template.absolute())
         self.assertEqual(out['run_cwd'], Path('test_run_cwd'))
 
     def tearDown(self):

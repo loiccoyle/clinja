@@ -31,8 +31,9 @@ class TestUtils(TestCase):
     def test_f_docstring(self):
         @utils.f_docstring(f'{1+1}')
         def func_test():
-            pass
+            return True
         self.assertEqual(func_test.__doc__, '2')
+        self.assertTrue(func_test())
 
     def test_bold(self):
         self.assertEqual(utils.bold('bla'), '\x1b[1mbla\x1b[0m')
