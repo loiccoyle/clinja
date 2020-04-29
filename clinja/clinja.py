@@ -2,7 +2,7 @@ import re
 import json
 import click
 
-from io import StringIO
+from io import TextIOWrapper
 from myopy import PyFile
 from typing import Any
 from typing import Union
@@ -16,14 +16,14 @@ from .settings import DYNAMIC_FILE, STATIC_FILE
 
 class ClinjaTemplate(Template):
     """Small wrapper to cleanly provide the template in the form of a
-    StringIO object.
+    TextIOWrapper object.
     """
-    def __new__(cls, template: StringIO, *args, **kwargs):
+    def __new__(cls, template: TextIOWrapper, *args, **kwargs):
         """
         Parameters:
         -----------
         template:
-            Template StringIO object.
+            Template TextIOWrapper object.
 
         Attributes:
         contents: str
@@ -59,28 +59,28 @@ class ClinjaDynamic:
         self.dynamic_file = dynamic_file
 
     @staticmethod
-    def _get_stringio_path(stringio: StringIO) -> Path:
-        """Tries to find the file path of a StringIO object.
+    def _get_io_path(textio: TextIOWrapper) -> Path:
+        """Tries to find the file path of a TextIOWrapper object.
 
         Parameters:
         -----------
-        stringio
-            StringIO instance for which to find the path.
+        textio
+            TextIOWrapper instance for which to find the path.
 
         Returns:
         --------
         Path
-            path to stringio's file.
+            path to textio's file.
         """
-        if stringio is None or stringio.name in ['<stdin>', '<stdout>']:
+        if textio is None or textio.name in ['<stdin>', '<stdout>']:
             return None
         else:
-            return Path(stringio.name).absolute()
+            return Path(textio.name).absolute()
 
     def run(self,
             static_vars: dict={},
-            template: Union[StringIO, Path]=None,
-            destination: Union[StringIO, Path]=None,
+            template: Union[TextIOWrapper, Path]=None,
+            destination: Union[TextIOWrapper, Path]=None,
             run_cwd: Path=Path.cwd().absolute()):
         """Runs the python dynamic.py file and returns the variable name and value
         dictionary.
@@ -101,10 +101,10 @@ class ClinjaDynamic:
         dict:
             The variable name and values after running the file.
         """
-        if isinstance(template, StringIO):
-            template = self._get_stringio_path(template)
-        if isinstance(destination, StringIO):
-            destination = self._get_stringio_path(destination)
+        if isinstance(template, TextIOWrapper):
+            template = self._get_io_path(template)
+        if isinstance(destination, click.utils.LazyFile):
+            destination = self._get_io_path(destination)
 
         dynamic_vars = {}
         conf = PyFile(self.dynamic_file)

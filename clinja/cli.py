@@ -105,7 +105,7 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
                              # type=click.STRING,
                              show_default=True)
         try:
-            all_vars[var] = static.sanitize_variable_name(value)
+            all_vars[var] = value
         except ValueError as e:
             err_exit(str(e))
         if not dry_run and var not in dynamic_vars.keys():
@@ -170,7 +170,8 @@ def add(ctx, variable_name: str, value: str, force: bool=False):
     if value == ():
         value = click.prompt(bold("value"),
                              type=click.STRING)
-    else:
+    elif isinstance(value, tuple):
+        # for when this method gets called in the run command
         value = ' '.join(value)
     value = literal_eval_or_string(value)
 
