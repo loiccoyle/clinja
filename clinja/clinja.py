@@ -27,7 +27,7 @@ class ClinjaTemplate(Template):
 
         Attributes:
         contents: str
-            contents of the template
+            Contents of the template
 
         """
         contents = template.read()
@@ -41,7 +41,7 @@ class ClinjaTemplate(Template):
         Returns:
         --------
         set:
-            set containing the undeclared variables ofund in the template.
+            Set containing the undeclared variables found in the template.
         """
         ast = self.environment.parse(self._contents)
         return find_undeclared_variables(ast)
