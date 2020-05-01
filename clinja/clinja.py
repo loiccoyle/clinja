@@ -40,13 +40,13 @@ class ClinjaDynamic:
         if textio.name in ['<stdin>', '<stdout>']:
             return None
         else:
-            return Path(textio.name).absolute()
+            return Path(textio.name)
 
     def run(self,
             static_vars: dict={},
             template: Union[TextIOWrapper, Path]=None,
             destination: Union[TextIOWrapper, Path]=None,
-            run_cwd: Path=Path.cwd().absolute()):
+            run_cwd: Path=Path.cwd()):
         """Runs the python dynamic.py file and returns the variable name and value
         dictionary.
 
@@ -70,12 +70,16 @@ class ClinjaDynamic:
             template = self._get_io_path(template)
         if isinstance(destination, (click.utils.LazyFile, TextIOWrapper)):
             destination = self._get_io_path(destination)
+        if template is not None:
+            template = template.resolve()
+        if destination is not None:
+            destination = destination.resolve()
 
         dynamic_vars = {}
         conf = PyFile(self.dynamic_file)
         conf.provide('TEMPLATE', template)
         conf.provide('DESTINATION', destination)
-        conf.provide('RUN_CWD', run_cwd)
+        conf.provide('RUN_CWD', run_cwd.resolve())
         conf.provide('STATIC_VARS', static_vars.copy())
         conf.provide('DYNAMIC_VARS', dynamic_vars)
         conf_module = conf.run()

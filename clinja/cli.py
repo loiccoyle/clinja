@@ -213,33 +213,29 @@ def add(ctx, variable_name: str, value: Any, force: bool=False):
 
 
 @cli.command(name='test')
-@click.argument('template', default='-',
-                type=lambda x: Path(x).absolute() if x != '-' else None,
-                autocompletion=file_names)
-@click.argument('destination', default='-',
-                type=lambda x: Path(x).absolute() if x != '-' else None,
-                autocompletion=file_names)
-@click.argument('run_cwd', default=Path.cwd().absolute(), type=Path)
-@click.argument('static_vars', default='', type=click.STRING)
+@click.option('--template', type=Path, help='mock template path.')
+@click.option('--destination', type=Path, help='mock template path.')
+@click.option('--run_cwd', default=Path.cwd(), type=Path,
+              help='mock current working directory path.')
+@click.option('--static_vars', type=click.STRING, help='mock json format static variables.')
+# @click.argument('template', default='-',
+#                 type=lambda x: Path(x).absolute() if x != '-' else None,
+#                 autocompletion=file_names)
+# @click.argument('destination', default='-',
+#                 type=lambda x: Path(x).absolute() if x != '-' else None,
+#                 autocompletion=file_names)
+# @click.argument('run_cwd', default=Path.cwd().absolute(), type=Path)
+# @click.argument('static_vars', default='', type=click.STRING)
 @click.pass_context
-def test(ctx, template, destination, run_cwd=Path.cwd(), static_vars=None):
+def test(ctx, template=None, destination=None, run_cwd=Path.cwd(), static_vars=None):
     '''Test run your dynamic.py file.
 
     Run your dynamic.py file using mock values.
 
     TEMPLATE, DESTINATION, RUN_CWD and STATIC_VARS are provided to the
     dynamic.py file in their respective variable names.
-
-    TEMPLATE (optional, default: None): mock template path.
-
-    DESTINATION (optional, default: None): mock destination path.
-
-    RUN_CWD (optional, default: cwd): mock current working directory.
-
-    STATIC_VARS (optional, default: static.json): mock json format static
-    variables.
     '''
-    if static_vars != '':
+    if static_vars is not None:
         try:
             static_vars = loads(static_vars)
         except JSONDecodeError as e:

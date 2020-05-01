@@ -78,18 +78,18 @@ DYNAMIC_VARS['run_cwd'] = RUN_CWD
                                run_cwd=Path('test_run_cwd'),
                                static_vars={'name': 'John'})
         self.assertEqual(out['from_static'], 'John Apple')
-        self.assertEqual(out['template_path'], Path('test_template'))
-        self.assertEqual(out['destination_path'], Path('test_destination'))
-        self.assertEqual(out['run_cwd'], Path('test_run_cwd'))
+        self.assertEqual(out['template_path'], Path('test_template').resolve())
+        self.assertEqual(out['destination_path'], Path('test_destination').resolve())
+        self.assertEqual(out['run_cwd'], Path('test_run_cwd').resolve())
 
         out = self.dynamic.run(template=TextIOWrapper(self.test_template.open('r')),
                                destination=TextIOWrapper(self.test_template.open('r')),
                                run_cwd=Path('test_run_cwd'),
                                static_vars={'name': 'John'})
         self.assertEqual(out['from_static'], 'John Apple')
-        self.assertEqual(out['template_path'], self.test_template.absolute())
-        self.assertEqual(out['destination_path'], self.test_template.absolute())
-        self.assertEqual(out['run_cwd'], Path('test_run_cwd'))
+        self.assertEqual(out['template_path'], self.test_template.resolve())
+        self.assertEqual(out['destination_path'], self.test_template.resolve())
+        self.assertEqual(out['run_cwd'], Path('test_run_cwd').resolve())
 
     def tearDown(self):
         rmtree(self.test_dir, ignore_errors=True)
