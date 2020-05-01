@@ -8,7 +8,7 @@ from json import JSONDecodeError
 
 from .clinja import ClinjaDynamic
 from .clinja import ClinjaStatic
-from .clinja import ClinjaTemplate
+from .utils import Template
 from .utils import partial_wrap
 from .utils import err_exit
 from .utils import literal_eval_or_string
@@ -100,7 +100,7 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
     """
     if template.name == '<stdin>':
         prompt = 'never'
-    clinja_template = ClinjaTemplate(template)
+    clinja_template = Template(template)
     static = ctx.obj['static']
     static_vars = static.stored
     dynamic_vars = ctx.obj['dynamic'].run(static_vars=static_vars,

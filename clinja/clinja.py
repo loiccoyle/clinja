@@ -7,45 +7,9 @@ from myopy import PyFile
 from typing import Any
 from typing import Union
 from pathlib import Path
-from jinja2 import Template
-from jinja2 import Environment
-from jinja2.meta import find_undeclared_variables
 
 from .settings import DYNAMIC_FILE, STATIC_FILE
 from .utils import sanitize_variable_name
-
-
-class ClinjaTemplate(Template):
-    """Small wrapper to cleanly provide the template in the form of a
-    TextIOWrapper object.
-    """
-    def __new__(cls, template: TextIOWrapper, *args, **kwargs):
-        """
-        Parameters:
-        -----------
-        template:
-            Template TextIOWrapper object.
-
-        Attributes:
-        contents: str
-            Contents of the template
-
-        """
-        contents = template.read()
-        template_cls = super().__new__(cls, contents, *args, **kwargs)
-        template_cls._contents = contents
-        return template_cls
-
-    def get_vars(self) -> set:
-        """Gets the variables in the template.
-
-        Returns:
-        --------
-        set:
-            Set containing the undeclared variables found in the template.
-        """
-        ast = self.environment.parse(self._contents)
-        return find_undeclared_variables(ast)
 
 
 class ClinjaDynamic:

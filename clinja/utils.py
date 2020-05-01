@@ -7,6 +7,9 @@ from ast import literal_eval
 from functools import wraps
 from functools import partial
 from functools import update_wrapper
+from io import TextIOWrapper
+from jinja2 import Template
+from jinja2.meta import find_undeclared_variables
 
 
 def partial_wrap(func: Callable, *args, **kwargs) -> Callable:
@@ -102,3 +105,36 @@ class AliasedGroup(click.Group):
         elif len(matches) == 1:
             return click.Group.get_command(self, ctx, matches[0])
         ctx.fail('Too many matches: %s' % ', '.join(sorted(matches)))
+
+
+class Template(Template):
+    """Small wrapper to cleanly provide the template in the form of a
+    TextIOWrapper object.
+    """
+    def __new__(cls, template: TextIOWrapper, *args, **kwargs):
+        """
+        Parameters:
+        -----------
+        template:
+            Template TextIOWrapper object.
+
+        Attributes:
+        contents: str
+            Contents of the template
+
+        """
+        contents = template.read()
+        template_cls = super().__new__(cls, contents, *args, **kwargs)
+        template_cls._contents = contents
+        return template_cls
+
+    def get_vars(self) -> set:
+        """Gets the variables in the template.
+
+        Returns:
+        --------
+        set:
+            Set containing the undeclared variables found in the template.
+        """
+        ast = self.environment.parse(self._contents)
+        return find_undeclared_variables(ast)
