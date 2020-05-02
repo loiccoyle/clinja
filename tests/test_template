@@ -1,9 +1,0 @@
-{{ full_name }}
-{{ py_package }}
-{{ email }}
-{{ year }}
-{{ time }}
-{{ something }}
-{% if bla %}
-adadadad
-{% endif %}
