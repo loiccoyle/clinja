@@ -58,9 +58,7 @@ In short:
 
     Clinja's {bold('dynamic')} variables are computed by the python file: {bold(str(DYNAMIC_FILE))}
 ''')
-def cli(ctx):
-    # ensure that ctx.obj exists and is a dict (in case `cli()` is called
-    # by means other than the `if` block below)
+def cli(ctx):  # pragma: no cover
     ctx.ensure_object(dict)
 
     if not CONF_DIR.is_dir():
@@ -71,7 +69,6 @@ def cli(ctx):
     if not STATIC_FILE.is_file():
         with open(STATIC_FILE, 'w') as fp:
             fp.write(STATIC_FILE_INIT)
-
     ctx.obj['static'] = ClinjaStatic(static_file=STATIC_FILE)
     ctx.obj['dynamic'] = ClinjaDynamic(dynamic_file=DYNAMIC_FILE)
 

@@ -37,7 +37,7 @@ class ClinjaDynamic:
         Path
             path to textio's file.
         """
-        if textio.name in ['<stdin>', '<stdout>']:
+        if not hasattr(textio, 'name') or textio.name in ['<stdin>', '<stdout>']:
             return None
         else:
             return Path(textio.name)
