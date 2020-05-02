@@ -30,15 +30,15 @@ from .completions import file_names
 def prompt_value_check(value):
     try:
         return literal_eval_or_string(value)
-    except SyntaxError as e:
-        raise click.UsageError(e)
+    except Exception as e:
+        raise click.UsageError(str(e))
 
 
 def prompt_variable_name_check(value):
     try:
         return sanitize_variable_name(value)
     except ValueError as e:
-        raise click.UsageError(e)
+        raise click.UsageError(str(e))
 
 
 @click.group(cls=AliasedGroup)  # (invoke_without_command=True)
