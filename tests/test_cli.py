@@ -196,7 +196,7 @@ DYNAMIC_VARS['static_vars'] = STATIC_VARS
         self.assertEqual(res.output,
                         f'''\
 missing: value_missing
-Do you want to store missing? [y/N]: y
+Do you want to store missing? [Y/n]: y
 1
 3
 {self.template_path.resolve()}

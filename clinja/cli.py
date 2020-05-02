@@ -123,7 +123,7 @@ def run(obj, template, destination, prompt='always', dry_run=False):
         if not dry_run and var not in dynamic_vars.keys():
             in_static = var in static_vars.keys()
             if (not in_static and
-                click.confirm(f'Do you want to store {bold(var)}?')):
+                click.confirm(f'Do you want to store {bold(var)}?', default=True)):
                 add.callback(var, value, force=False)
             elif in_static:
                 # call the add method without cli
@@ -202,7 +202,7 @@ def add(obj, variable_name: str="", value: Any=(), force: bool=False):
                        " with ",
                        bold(str(value)),
                        "?"])
-        if click.confirm(msg):
+        if click.confirm(msg, default=True):
             static.add(variable_name, value, force=True)
 
 
