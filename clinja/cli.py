@@ -89,8 +89,8 @@ def cli(ctx):
               help=('Dry run, won\'t write any files or change/add any static'
                     ' values.')
               )
-@click.pass_context
-def run(ctx, template, destination, prompt='always', dry_run=False):
+@click.pass_obj
+def run(obj, template, destination, prompt='always', dry_run=False):
     """Run jinja on a template.
 
     TEMPLATE (optional, default: stdin): template file on which to run jinja,
@@ -98,14 +98,14 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
 
     DESTINATION (optional, default: stdout): output destination.
     """
-    if template.name == '<stdin>':
+    if template.name == '<stdin>':  # pragma: no cover
         prompt = 'never'
     clinja_template = Template(template)
-    static = ctx.obj['static']
+    static = obj['static']
     static_vars = static.stored
-    dynamic_vars = ctx.obj['dynamic'].run(static_vars=static_vars,
-                                          template=template,
-                                          destination=destination)
+    dynamic_vars = obj['dynamic'].run(static_vars=static_vars,
+                                      template=template,
+                                      destination=destination)
     all_vars = {**static_vars, **dynamic_vars}
 
     if prompt == 'always':
@@ -115,7 +115,7 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
                                                     set(static_vars.keys()))
         if prompt == 'never' and len(prompt_vars) > 0:
             # only continue if there are no missing vars
-           err_exit(f"Missing {', '.join(map(repr, prompt_vars))}.")
+            err_exit(f"Missing {', '.join(map(repr, prompt_vars))}.")
 
     for var in sorted(prompt_vars):
         value = click.prompt(bold(var),
@@ -139,13 +139,13 @@ def run(ctx, template, destination, prompt='always', dry_run=False):
 @cli.command(name='list')
 @click.argument('pattern', default="", type=click.STRING,
                 autocompletion=variable_names)
-@click.pass_context
-def list(ctx, pattern=None):
+@click.pass_obj
+def list(obj, pattern=None):
     '''List stored static variable(s).
 
     PATTERN (optional): regexp pattern for variable name filtering.
     '''
-    for k, v in ctx.obj['static'].list(pattern=pattern):
+    for k, v in obj['static'].list(pattern=pattern):
         click.echo(f'{bold(k)}: {v}')
 
 
@@ -154,11 +154,11 @@ def list(ctx, pattern=None):
                 autocompletion=variable_names,
                 nargs=-1,
                 type=sanitize_variable_name)
-@click.pass_context
-def remove(ctx, variable_name):
+@click.pass_obj
+def remove(obj, variable_name):
     '''Remove stored static variable(s).
     '''
-    static = ctx.obj['static']
+    static = obj['static']
     err = False
     for v_name in variable_name:
         try:
@@ -166,10 +166,10 @@ def remove(ctx, variable_name):
         except KeyError as e:
             err = True
             err_exit(f'Variable name {e} is not in storage.', exit_code=0)
-        except ValueError as e:
-            err = True
-            err_exit(str(e), exit_code=0)
-    if exit:
+        # except ValueError as e:
+        #     err = True
+        #     err_exit(str(e), exit_code=0)
+    if err:
         sys.exit(1)
 
 
@@ -177,17 +177,17 @@ def remove(ctx, variable_name):
 @click.argument('variable_name',
                 default="",
                 autocompletion=variable_names,
-                type=sanitize_variable_name)
+                type=lambda x: sanitize_variable_name(x) if x != '' else '')
 @click.argument('value',
                 nargs=-1,
                 type=click.STRING,
                 autocompletion=variable_value)
 @click.option('-f', '--force', 'force', is_flag=True, default=False)
-@click.pass_context
-def add(ctx, variable_name: str, value: Any, force: bool=False):
+@click.pass_obj
+def add(obj, variable_name: str="", value: Any=(), force: bool=False):
     """Add a variable to static storage.
     """
-    static = ctx.obj['static']
+    static = obj['static']
     if variable_name == '':
         variable_name = click.prompt(bold('variable name'),
                                      value_proc=prompt_variable_name_check)
@@ -226,8 +226,8 @@ def add(ctx, variable_name: str, value: Any, force: bool=False):
 #                 autocompletion=file_names)
 # @click.argument('run_cwd', default=Path.cwd().absolute(), type=Path)
 # @click.argument('static_vars', default='', type=click.STRING)
-@click.pass_context
-def test(ctx, template=None, destination=None, run_cwd=Path.cwd(), static_vars=None):
+@click.pass_obj
+def test(obj, template=None, destination=None, run_cwd=Path.cwd(), static_vars=None):
     '''Test run your dynamic.py file.
 
     Run your dynamic.py file using mock values.
@@ -241,11 +241,11 @@ def test(ctx, template=None, destination=None, run_cwd=Path.cwd(), static_vars=N
         except JSONDecodeError as e:
             err_exit(f'"{static_vars}" is not valid json, {e}')
     else:
-        static_vars = ctx.obj['static'].stored
-    dynamic_vars = ctx.obj['dynamic'].run(static_vars=static_vars,
-                                          template=template,
-                                          destination=destination,
-                                          run_cwd=run_cwd)
+        static_vars = obj['static'].stored
+    dynamic_vars = obj['dynamic'].run(static_vars=static_vars,
+                                      template=template,
+                                      destination=destination,
+                                      run_cwd=run_cwd)
     for k, v in sorted(dynamic_vars.items()):
         click.echo(f"{bold(k)}: {v}")
 
