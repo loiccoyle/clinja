@@ -41,7 +41,7 @@ def prompt_variable_name_check(value):
         raise click.UsageError(str(e))
 
 
-@click.group(cls=AliasedGroup)  # (invoke_without_command=True)
+@click.group(cls=AliasedGroup)
 @click.pass_context
 @f_docstring(f'''
 A smart and versatile jinja command line interface.
@@ -163,9 +163,6 @@ def remove(obj, variable_name):
         except KeyError as e:
             err = True
             err_exit(f'Variable name {e} is not in storage.', exit_code=0)
-        # except ValueError as e:
-        #     err = True
-        #     err_exit(str(e), exit_code=0)
     if err:
         sys.exit(1)
 
@@ -215,14 +212,6 @@ def add(obj, variable_name: str="", value: Any=(), force: bool=False):
 @click.option('--run_cwd', default=Path.cwd(), type=Path,
               help='mock current working directory path.')
 @click.option('--static_vars', type=click.STRING, help='mock json format static variables.')
-# @click.argument('template', default='-',
-#                 type=lambda x: Path(x).absolute() if x != '-' else None,
-#                 autocompletion=file_names)
-# @click.argument('destination', default='-',
-#                 type=lambda x: Path(x).absolute() if x != '-' else None,
-#                 autocompletion=file_names)
-# @click.argument('run_cwd', default=Path.cwd().absolute(), type=Path)
-# @click.argument('static_vars', default='', type=click.STRING)
 @click.pass_obj
 def test(obj, template=None, destination=None, run_cwd=Path.cwd(), static_vars=None):
     '''Test run your dynamic.py file.
