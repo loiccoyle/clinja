@@ -1,14 +1,16 @@
-<h1 align="center">clinja</h1>
-<h5 align="center">A better jinja CLI.</h5>
+<p align="center">
+  <img src="https://i.imgur.com/9RtyTib.gif">
+</p>
+<h5 align="center">A jinja CLI.</h5>
 <p align="center">
   <a href="https://github.com/loiccoyle/clinja/workflows/tests/"><img src="https://github.com/loiccoyle/clinja/workflows/tests/badge.svg"></a>
   <a href="./LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
 </p>
 
-`clinja` is smart and versatile command line interface for [`jinja`](https://github.com/pallets/jinja).
+clinja is smart and versatile command line interface for [`jinja`](https://github.com/pallets/jinja).
 
 # Instalation
-`clinja` should run just fine on Windows, macOS and \*nix, to install open up a terminal and run:
+clinja should run just fine on Windows, macOS and \*nix, to install open up a terminal and run:
 ```
 pip install clinja
 ```
@@ -35,20 +37,20 @@ poetry completions zsh > $(brew --prefix)/share/zsh/site-functions/_clinja
 ```
 
 # Dependencies
-`clinja` relies on the following dependencies to function:
+clinja relies on the following dependencies to function:
 * python3
 * [`jinja`](https://github.com/pallets/jinja): the templating engine.
 * [`click`](https://github.com/pallets/click): for the command line interface and completion.
 * [`myopy`](https://github.com/loiccoyle/myopy): to run the **dynamic** source python file.
 
 # How it works
-When you run `clinja` on a template containing some `jinja` variables to fill in, `clinja` will fetch values for these variables from 2 sources.
+When you run clinja on a template containing some `jinja` variables to fill in, clinja will fetch values for these variables from 2 sources.
 
 #### The static source
-The **static** source is simply a json file which contains unchanging, static, key value pairs, a la `cookiecutter`'s `cookiecutter.json` file. This is where you would want to add your name, email, username etc. You have full control over these values and can easily manage the stored values using `clinja`.
+The **static** source is simply a json file which contains unchanging, static, key value pairs, a la `cookiecutter`'s `cookiecutter.json` file. This is where you would want to add your name, email, username etc. You have full control over these values and can easily manage the stored values using clinja.
 
 #### The dynamic source
-This is where things get a bit more interesting, `clinja` can also get values from a so called **dynamic** source. This source is a python file, with a few variables provided to it at run time. The provided variables are:
+This is where things get a bit more interesting, clinja can also get values from a so called **dynamic** source. This source is a python file, with a few variables provided to it at run time. The provided variables are:
 ```python
 TEMPLATE  # Pathlib Path to the template, is None when using stdin.
 DESTINATION  # Pathlib Path to the destination, is None when using stdout.
@@ -59,7 +61,7 @@ DYNAMIC_VARS  # Dictionary of dynamic variables, initially empty, populated by t
 With this file you can do some nifty things, such as automatically determining the name of the git repo in which the completed template will live in. Any values computed in this file should be added to the ```DYNAMIC_VARS``` dict.
 
 #### Missing variables
-When `clinja` runs into a variable it can't get from either the **static** or the **dynamic** source, it will prompt you for a value, and offer to store it in the **static** source so it won't have to next time.
+When clinja runs into a variable it can't get from either the **static** or the **dynamic** source, it will prompt you for a value, and offer to store it in the **static** source so it won't have to next time.
 
 # Usage
 ```
