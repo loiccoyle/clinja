@@ -15,6 +15,8 @@ clinja should run just fine on Windows, macOS and \*nix, to install open up a te
 pip install clinja
 ```
 
+As always, it's a good idea to use a virtual env, or maybe consider using [`pipx`](https://github.com/pipxproject/pipx).
+
 ##### To generate \<tab\> completion for your shell run:
 ```bash
 # Bash:
@@ -61,7 +63,7 @@ DYNAMIC_VARS  # Dictionary of dynamic variables, initially empty, populated by t
 With this file you can do some nifty things, such as automatically determining the name of the git repo in which the completed template will live in. Any values computed in this file should be added to the ```DYNAMIC_VARS``` dict.
 
 #### Missing variables
-When clinja runs into a variable it can't get from either the **static** or the **dynamic** source, it will prompt you for a value, and offer to store it in the **static** source so it won't have to next time.
+When clinja runs into a variable it can't get from either the **static** or the **dynamic** source, it will prompt you for a value, and offer to store it in the **static** for later use.
 
 # Usage
 ```
@@ -118,7 +120,7 @@ Options:
   --help              Show this message and exit.
 
 ```
-The `clinja test` subcommand is provided to help setup and test your **dynamic** source. It allows you to provide any values to the `dynamic` sources variables, run the dynamic.py file and will print out the results.
+The `clinja test` subcommand is provided to help setup and test your **dynamic** source. It allows you to provide any values to the `dynamic` source's input variables, run the `dynamic.py` file and will print out the results.
 
 ##### Run jinja
 ```
@@ -143,9 +145,9 @@ Options:
 ###### --prompt
 * Using `--prompt always`, will use the values fetched from both sources as defaults and prompt you for each variable's value, giving you a chance to overwrite.
 * Using `--prompt missing`, will only prompt you for the variables it can't find a value for.
-* Using `--prompt never`, will never prompt and will fail if `clinja` encounters a variable for which it has no value.
+* Using `--prompt never`, will never prompt and will fail if clinja encounters a variable for which it has no value.
 
 ###### -d
-The `-d` flag will do a dry run, no files will be written and your static source will not change.
+The `-d` flag will do a dry run, no files will be written and your **static** source will not change.
 
 <sub>This is part 2 of my ongoing personal mission to improve template handling from the command line, see part 1: [tmpl](https://github.com/loiccoyle/tmpl.sh).</sub>
