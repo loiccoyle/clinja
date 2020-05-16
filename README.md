@@ -71,7 +71,7 @@ When clinja runs into a variable it can't get from either the **static** or the 
 $ clinja --help
 Usage: clinja [OPTIONS] COMMAND [ARGS]...
 
-  A smart and versatile jinja command line interface.
+  A versatile jinja command line interface.
 
   Clinja uses two sources to find values for jinja variables. A
   static source, which is just a json file, and a dynamic

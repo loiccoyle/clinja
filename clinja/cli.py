@@ -44,7 +44,7 @@ def prompt_variable_name_check(value):
 @click.group(cls=AliasedGroup)
 @click.pass_context
 @f_docstring(f'''
-A smart and versatile jinja command line interface.
+A versatile jinja command line interface.
 
 Clinja uses two sources to find values for jinja variables. A {bold('static')}
 source, which is just a json file, and a {bold('dynamic')} source, which is a
