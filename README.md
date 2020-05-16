@@ -61,7 +61,7 @@ RUN_CWD  # Pathlib Path, Directory were the clinja command was run.
 STATIC_VARS  # Dictionary of static variables.
 DYNAMIC_VARS  # Dictionary of dynamic variables, initially empty, populated by the dynamic file.
 ```
-With this file you can do some nifty things, such as automatically determining the name of the git repo in which the completed template will live in. Any values computed in this file should be added to the ```DYNAMIC_VARS``` dict.
+With this file you can do some nifty things, such as [automatically determining the name of the git repo in which the completed template will live in](https://github.com/loiccoyle/clinja/wiki/git-repository-name). Any values computed in this file should be added to the ```DYNAMIC_VARS``` dict.
 
 #### Missing variables
 When clinja runs into a variable it can't get from either the **static** or the **dynamic** source, it will prompt you for a value, and offer to store it in the **static** file for later use.
