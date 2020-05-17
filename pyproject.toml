@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "clinja"
-version = "1.0.0"
+version = "1.1.0"
 description = "A jinja command line interface"
 authors = ["Loic Coyle <loic.coyle@hotmail.fr>"]
 license = "MIT"
