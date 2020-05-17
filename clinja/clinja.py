@@ -77,11 +77,11 @@ class ClinjaDynamic:
 
         dynamic_vars = {}
         conf = PyFile(self.dynamic_file)
-        conf.provide('TEMPLATE', template)
-        conf.provide('DESTINATION', destination)
-        conf.provide('RUN_CWD', run_cwd.resolve())
-        conf.provide('STATIC_VARS', static_vars.copy())
-        conf.provide('DYNAMIC_VARS', dynamic_vars)
+        conf.provide(TEMPLATE=template,
+                     DESTINATION=destination,
+                     RUN_CWD=run_cwd.resolve(),
+                     STATIC_VARS=static_vars.copy(),
+                     DYNAMIC_VARS=dynamic_vars)
         conf_module = conf.run()
         return dynamic_vars
 
