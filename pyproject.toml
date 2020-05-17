@@ -1,15 +1,20 @@
 [tool.poetry]
 name = "clinja"
-version = "0.1.0"
-description = "a smart cli jinja runner"
+version = "1.0.0"
+description = "A jinja command line interface"
 authors = ["Loic Coyle <loic.coyle@hotmail.fr>"]
 license = "MIT"
 classifiers = [
     "Programming Language :: Python",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: Unix",
+    "Topic :: Utilities",
+    "Topic :: Text Processing"
 ]
 repository = "https://github.com/loiccoyle/clinja"
 readme = "README.md"
-keywords = []
+keywords = ["jinja", "cli", "templates"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
