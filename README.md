@@ -5,6 +5,7 @@
 <p align="center">
   <a href="https://github.com/loiccoyle/clinja/workflows/tests/"><img src="https://github.com/loiccoyle/clinja/workflows/tests/badge.svg"></a>
   <a href="./LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+  <a href="https://pypi.org/project/clinja/"><img src="https://img.shields.io/pypi/v/clinja"></a>
 </p>
 
 clinja is a versatile command line interface for [`jinja`](https://github.com/pallets/jinja).
