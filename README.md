@@ -53,7 +53,7 @@ When you run clinja on a template containing some `jinja` variables to fill in, 
 The **static** source is simply a json file which contains unchanging, static, key value pairs, a la `cookiecutter`'s `cookiecutter.json` file. This is where you would want to add your name, email, username etc. You have full control over these values and can easily manage the stored values using clinja.
 
 #### The dynamic source
-This is where things get a bit more interesting, clinja can also get values from a so called **dynamic** source. This source is a python file, with a few variables provided to it at run time. The provided variables are:
+This is where things get a bit more interesting, clinja can also get values from a so called **dynamic** source, check the [wiki](https://github.com/loiccoyle/clinja/wiki) for some examples. This source is a python file, with a few variables provided to it at run time. The provided variables are:
 ```python
 TEMPLATE  # Pathlib Path to the template, is None when using stdin.
 DESTINATION  # Pathlib Path to the destination, is None when using stdout.
