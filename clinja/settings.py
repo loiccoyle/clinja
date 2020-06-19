@@ -3,18 +3,14 @@ import platform
 from pathlib import Path
 from click import get_app_dir
 
-# HOME = os.getenv('HOME', os.getenv('USERPROFILE'))
-# XDG_CONF_DIR = os.getenv('XDG_CONFIG_HOME', Path(HOME) / '.config')
-
-# CONF_DIR = Path(XDG_CONF_DIR) / 'clinja'
-CONF_DIR = Path(get_app_dir('clinja'))
-DYNAMIC_FILE = CONF_DIR / 'dynamic.py'
-STATIC_FILE = CONF_DIR / 'static.json'
+CONF_DIR = Path(get_app_dir("clinja"))
+DYNAMIC_FILE = CONF_DIR / "dynamic.py"
+STATIC_FILE = CONF_DIR / "static.json"
 
 
 DYNAMIC_FILE_INIT = """\
 # This is clinja's dynamic source.
-# Use this file to dynamically compute jinja variables form the variables
+# Use this file to dynamically compute jinja variables from the variables
 # provided at run time:
 
 # TEMPLATE (Path): Path to the template, is None when using stdin.
