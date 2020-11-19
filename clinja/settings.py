@@ -1,6 +1,7 @@
 import os
 import platform
 from pathlib import Path
+
 from click import get_app_dir
 
 CONF_DIR = Path(get_app_dir("clinja"))

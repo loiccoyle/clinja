@@ -6,8 +6,8 @@ from .clinja import ClinjaStatic
 from .settings import STATIC_FILE
 
 
-def get_completions(shell: str='bash') -> str:
-    return get_completion_script('clinja', '_CLINJA_COMPLETE', shell)
+def get_completions(shell: str = "bash") -> str:
+    return get_completion_script("clinja", "_CLINJA_COMPLETE", shell)
 
 
 def variable_names(ctx, args, incomplete, static_file=STATIC_FILE):
@@ -17,7 +17,7 @@ def variable_names(ctx, args, incomplete, static_file=STATIC_FILE):
 
 def file_names(ctx, args, incomplete):
     # cwd = Path.cwd()
-    return [p.name for p in Path().glob(incomplete + '*')]
+    return [p.name for p in Path().glob(incomplete + "*")]
 
 
 def variable_value(ctx, args, incomplete, static_file=STATIC_FILE):
