@@ -27,12 +27,12 @@ class TestCompletions(TestCase):
 
     def test_variable_names(self):
         out = completions.variable_names(None, ['command'], 'a', static_file=self.static_path)
-        self.assertEqual(out, ['aa', 'ab'])
+        self.assertEqual(set(out), {'aa', 'ab'})
 
     def test_file_names(self):
         cwd = Path.cwd()
         os.chdir(self.test_dir)
-        self.assertEqual(completions.file_names(None, None, 'a'), ['ab', 'aa'])
+        self.assertEqual(set(completions.file_names(None, None, 'a')), {'ab', 'aa'})
         os.chdir(cwd)
 
     def test_variable_value(self):
