@@ -137,7 +137,7 @@ def run(
 
 
 @cli.command(name="list")
-@click.argument("pattern", default="", type=click.STRING, autocompletion=variable_names)
+@click.argument("pattern", default="", type=click.STRING, shell_complete=variable_names)
 @click.pass_obj
 def list(obj, pattern=None):
     """List stored static variable(s).
@@ -151,7 +151,7 @@ def list(obj, pattern=None):
 @cli.command(name="remove")
 @click.argument(
     "variable_name",
-    autocompletion=variable_names,
+    shell_complete=variable_names,
     nargs=-1,
     type=sanitize_variable_name,
 )
@@ -174,10 +174,10 @@ def remove(obj, variable_name):
 @click.argument(
     "variable_name",
     default="",
-    autocompletion=variable_names,
+    shell_complete=variable_names,
     type=lambda x: sanitize_variable_name(x) if x != "" else "",
 )
-@click.argument("value", nargs=-1, type=click.STRING, autocompletion=variable_value)
+@click.argument("value", nargs=-1, type=click.STRING, shell_complete=variable_value)
 @click.option("-f", "--force", "force", is_flag=True, default=False)
 @click.pass_obj
 def add(obj, variable_name: str = "", value: Any = (), force: bool = False):
