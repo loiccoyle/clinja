@@ -6,7 +6,7 @@ from typing import Any
 import click
 
 from .clinja import ClinjaDynamic, ClinjaStatic
-from .completions import file_names, get_completions, variable_names, variable_value
+from .completions import get_completions, variable_names, variable_value
 from .settings import (
     CONF_DIR,
     DYNAMIC_FILE,
@@ -21,7 +21,6 @@ from .utils import (
     err_exit,
     f_docstring,
     literal_eval_or_string,
-    partial_wrap,
     sanitize_variable_name,
 )
 
@@ -75,12 +74,8 @@ def cli(ctx):  # pragma: no cover
 
 
 @cli.command(name="run")
-@click.argument(
-    "template", default="-", type=click.File("r"), autocompletion=file_names
-)
-@click.argument(
-    "destination", default="-", type=click.File("w"), autocompletion=file_names
-)
+@click.argument("template", default="-", type=click.File("r"))
+@click.argument("destination", default="-", type=click.File("w"))
 @click.option(
     "--prompt",
     "prompt",
@@ -97,7 +92,13 @@ def cli(ctx):  # pragma: no cover
     help=("Dry run, won't write any files or change/add any static" " values."),
 )
 @click.pass_obj
-def run(obj, template, destination, prompt="always", dry_run=False):
+def run(
+    obj,
+    template,
+    destination,
+    prompt="always",
+    dry_run=False,
+):
     """Run jinja on a template.
 
     TEMPLATE (optional, default: stdin): template file on which to run jinja,
@@ -115,12 +116,9 @@ def run(obj, template, destination, prompt="always", dry_run=False):
     )
     all_vars = {**static_vars, **dynamic_vars}
 
-    if prompt == "always":
-        prompt_vars = clinja_template.get_vars()
-    elif prompt == "missing" or prompt == "never":
-        prompt_vars = clinja_template.get_vars() - (
-            set(dynamic_vars.keys()) | set(static_vars.keys())
-        )
+    prompt_vars = clinja_template.get_vars()
+    if prompt == "missing" or prompt == "never":
+        prompt_vars = prompt_vars - (set(dynamic_vars.keys()) | set(static_vars.keys()))
         if prompt == "never" and len(prompt_vars) > 0:
             # only continue if there are no missing vars
             err_exit(f"Missing {', '.join(map(repr, prompt_vars))}.")
@@ -133,15 +131,6 @@ def run(obj, template, destination, prompt="always", dry_run=False):
             show_default=True,
         )
         all_vars[var] = value
-        if not dry_run and var not in dynamic_vars.keys():
-            in_static = var in static_vars.keys()
-            if not in_static and click.confirm(
-                f"Do you want to store {bold(var)}?", default=True
-            ):
-                add.callback(var, value, force=False)
-            elif in_static:
-                # call the add method without cli
-                add.callback(var, value, force=False)
 
     if not dry_run or destination.name == "<stdout>":
         destination.write(clinja_template.render(all_vars))
@@ -262,6 +251,7 @@ def test(obj, template=None, destination=None, run_cwd=Path.cwd(), static_vars=N
 
 @cli.command(name="completion")
 @click.argument("shell", type=click.Choice(["bash", "zsh", "fish"]))
-def completion(shell):
+@click.pass_context
+def completion(ctx, shell):
     """Generate autocompletion for your shell."""
-    click.echo(get_completions(shell))
+    click.echo(get_completions(ctx, cli, shell))

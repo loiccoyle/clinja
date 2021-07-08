@@ -19,8 +19,8 @@ keywords = ["jinja", "cli", "templates"]
 [tool.poetry.dependencies]
 python = "^3.6"
 myopy = "^1.0"
-click = "^7.1.1"
-jinja2 = "^2.11.2"
+click = "^8.0.1"
+Jinja2 = "^3.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.1"
