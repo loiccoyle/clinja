@@ -226,6 +226,5 @@ DYNAMIC_VARS['static_vars'] = STATIC_VARS
 value_missing""",
         )
 
-
     def tearDown(self):
         rmtree(self.test_dir)
