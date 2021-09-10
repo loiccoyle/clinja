@@ -22,6 +22,7 @@ from .utils import (
     f_docstring,
     literal_eval_or_string,
     sanitize_variable_name,
+    prompt_tty,
 )
 
 
@@ -101,13 +102,10 @@ def run(
 ):
     """Run jinja on a template.
 
-    TEMPLATE (optional, default: stdin): template file on which to run jinja,
-    if using stdin, --prompt is set to "never".
+    TEMPLATE (optional, default: stdin): template file on which to run jinja.
 
     DESTINATION (optional, default: stdout): output destination.
     """
-    if template.name == "<stdin>":  # pragma: no cover
-        prompt = "never"
     clinja_template = Template(template)
     static = obj["static"]
     static_vars = static.stored
@@ -124,7 +122,7 @@ def run(
             err_exit(f"Missing {', '.join(map(repr, prompt_vars))}.")
 
     for var in sorted(prompt_vars):
-        value = click.prompt(
+        value = prompt_tty(
             bold(var),
             default=all_vars.get(var, None),
             value_proc=prompt_value_check,

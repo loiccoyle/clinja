@@ -1,9 +1,9 @@
-import re
+import os
 import sys
 from ast import literal_eval
 from functools import partial, update_wrapper, wraps
 from io import TextIOWrapper
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import click
 from jinja2 import Template
@@ -77,6 +77,35 @@ def f_docstring(docstring: str) -> Callable:
 def bold(string: str) -> str:
     """Make string bold."""
     return click.style(string, bold=True)
+
+
+def prompt_tty(
+    string: str,
+    default: Optional[str],
+    show_default: bool = True,
+    prompt_suffix: str = ": ",
+    value_proc: Optional[Callable] = None,
+) -> str:
+    tty = os.open("/dev/tty", os.O_RDONLY)
+    prompt_str = string
+    if default and show_default:
+        prompt_str += f" [{default}]"
+    prompt_str += prompt_suffix
+    click.echo(prompt_str, err=True, nl=False)
+
+    user_input = ""
+    while True:
+        raw = os.read(tty, 1).decode("utf8")
+        if not raw or raw == "\n":  # Wait for Ctrl-D or empty line
+            break
+        user_input += raw
+
+    os.close(tty)
+    if not user_input and default is not None:
+        return default
+    if value_proc is not None:
+        return value_proc(user_input)
+    return user_input
 
 
 class AliasedGroup(click.Group):

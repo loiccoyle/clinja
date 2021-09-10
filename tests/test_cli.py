@@ -209,23 +209,6 @@ DYNAMIC_VARS['static_vars'] = STATIC_VARS
         self.assertEqual(res.exit_code, 1)
         self.assertTrue("missing" in res.output)
 
-        res = runner.invoke(
-            cli.run,
-            [str(self.template_path), "--prompt", "missing"],
-            obj=self.obj,
-            input="value_missing\ny\n",
-        )
-        self.assertEqual(res.exit_code, 0)
-        self.assertEqual(
-            res.output,
-            f"""\
-missing: value_missing
-1
-3
-{self.template_path.resolve()}
-value_missing""",
-        )
-
         res = runner.invoke(cli.add, ["missing", "value_missing"], obj=self.obj)
         self.assertEqual(res.exit_code, 0)
         self.assertTrue("missing" in self.static.stored.keys())
@@ -243,25 +226,6 @@ value_missing""",
 value_missing""",
         )
 
-        res = runner.invoke(
-            cli.run,
-            [str(self.template_path), "--prompt", "always"],
-            obj=self.obj,
-            input="\n\n\n\n",
-        )
-        self.assertEqual(res.exit_code, 0)
-        self.assertEqual(
-            res.output,
-            f"""\
-aa [1]: \n\
-bb [3]: \n\
-missing [value_missing]: \n\
-template [{self.template_path.resolve()}]: \n\
-1
-3
-{self.template_path.resolve()}
-value_missing""",
-        )
 
     def tearDown(self):
         rmtree(self.test_dir)
