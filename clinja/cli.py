@@ -40,7 +40,7 @@ def prompt_variable_name_check(value):
         raise click.UsageError(str(e))
 
 
-@click.group(cls=AliasedGroup)
+@click.group(cls=AliasedGroup, invoke_without_command=True)
 @click.pass_context
 @f_docstring(
     f"""
@@ -72,6 +72,9 @@ def cli(ctx):  # pragma: no cover
             fp.write(STATIC_FILE_INIT)
     ctx.obj["static"] = ClinjaStatic(static_file=STATIC_FILE)
     ctx.obj["dynamic"] = ClinjaDynamic(dynamic_file=DYNAMIC_FILE)
+    # if no subcommand is provided default to run.
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(run)
 
 
 @cli.command(name="run")
